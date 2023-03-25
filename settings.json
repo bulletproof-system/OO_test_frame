@@ -2,6 +2,14 @@
 	"java_home" : "D:\\Program Files\\Java\\JDK8",
 	"project_path" : "",
 	"timeout" : 100,
+	"threads" : 50,
+	"jars" : [
+		"D:\\LTT\\repository\\OO\\homework_5\\homework_5.jar",
+		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl.jar"
+	],
+	"generators" : [
+		"generators\\dataMaker.py"
+	],
 	"elevators": [
 		{
 			"id" : 1,
