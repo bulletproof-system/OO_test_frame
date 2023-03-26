@@ -1,19 +1,26 @@
 {
+	// JAVA_HOME 路径
 	"java_home" : "D:\\Program Files\\Java\\JDK8",
 	"project_path" : "",
+	// 单个测试点最大时限
 	"timeout" : 100,
+	// 同时评测线程数
 	"threads" : 50,
+	// 项目
 	"jars" : [
 		"D:\\LTT\\repository\\OO\\homework_5\\homework_5.jar",
 		"D:\\LTT\\repository\\OO\\homework_5\\homework_5_old.jar",
 		// "D:\\LTT\\repository\\OO\\homework_5\\homework_5_wrong.jar",
 		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl.jar",
-		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl2.jar"
+		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl2.jar",
+		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl3.jar"
 	],
+	// 数据生成器
 	"generators" : [
 		"generators\\dataMaker.py",
 		"generators\\data_2.py"
 	],
+	// 电梯配置
 	"elevators": [
 		{
 			"id" : 1,
