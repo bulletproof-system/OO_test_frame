@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-03-25 14:38:46
+LastEditTime: 2023-03-26 09:59:18
 FilePath: core.py
 '''
 '''
@@ -19,13 +19,13 @@ import sys, os
 #         os.path.abspath(__file__)))))
 from config import settings
 from queue import PriorityQueue, Queue
-import subprocess, re, threading, time, json, threading, random
+import subprocess, re, threading, time, json, threading, random, traceback
 import pandas as pd
 from core.utils import Singleton
 from core import utils
 class Request():
     def __init__(self, s: str) -> None:
-        ret = re.match(r"^\[(?P<time>\d+\.\d+)\](?P<id>\d+)-FROM-(?P<from>\d+)-TO-(?P<to>\d+)$", s)
+        ret = re.match(r"^\[ *(?P<time>\d+\.\d+)\](?P<id>\d+)-FROM-(?P<from>\d+)-TO-(?P<to>\d+)$", s)
         self.time = float(ret.group("time"))
         self.id = int(ret.group("id"))
         self.origin = int(ret.group("from"))
@@ -45,6 +45,7 @@ class Elevator():
     def __init__(self, config) -> None:
         self.id = config.id
         self.now = config["initial_floor"]
+        self.capacity = config["capacity"]
         self.MOVE_TIME = int(config["move_time"])
         self.OPEN_TIME = int(config["open_time"])
         self.CLOSE_TIME = int(config["close_time"])
@@ -71,10 +72,12 @@ class Elevator():
                         indent=4, separators=(',', ': '))
     
     @classmethod
-    def parse(cls, elevators, passengers: dict, s):
+    def parse(cls, elevators: dict, passengers: dict, s):
         arrive = re.match(cls.ARRIVE, s)
         if (arrive != None):
             time, now, id = float(arrive.group("time")), int(arrive.group("now")), int(arrive.group("id"))
+            if id not in elevators.keys():
+                raise Exception(s, None, "没有该电梯")
             elevator: Elevator = elevators[id]
             if (elevator.state == "open"):
                 raise Exception(s, elevator, "在电梯开门时移动")
@@ -86,6 +89,8 @@ class Elevator():
         open = re.match(cls.OPEN, s)
         if (open != None):
             time, now, id = float(open.group("time")), int(open.group("now")), int(open.group("id"))
+            if id not in elevators.keys():
+                raise Exception(s, None, "没有该电梯")
             elevator: Elevator = elevators[id]
             if (elevator.state == "open"):
                 raise Exception(s, elevator, "无效开门动作(门已打开)")
@@ -97,6 +102,8 @@ class Elevator():
         close = re.match(cls.CLOSE, s)
         if (close != None):
             time, now, id = float(close.group("time")), int(close.group("now")), int(close.group("id"))
+            if id not in elevators.keys():
+                raise Exception(s, None, "没有该电梯")
             elevator: Elevator = elevators[id]
             if (elevator.state == "close"):
                 raise Exception(s, elevator, "无效关门动作(门已关闭)")
@@ -110,6 +117,8 @@ class Elevator():
         enter = re.match(cls.IN, s)
         if (enter != None):
             time, pid, now, id = float(enter.group("time")), int(enter.group("pid")), int(enter.group("now")), int(enter.group("id"))
+            if id not in elevators.keys():
+                raise Exception(s, None, "没有该电梯")
             elevator: Elevator = elevators[id]
             if (time < elevator.time):
                 raise Exception(s, elevator, "时间错误")
@@ -121,6 +130,8 @@ class Elevator():
                 raise Exception(s, elevators, "电梯未打开")
             if (elevator.now != now):
                 raise Exception(s, elevator, "电梯不在当前层")
+            if (len(elevator.passengers) == elevator.capacity):
+                raise Exception(s, elevator, "电梯超载")
             passenger: Person = passengers.pop(pid)
             elevator.passengers[pid] = passenger
             passenger.elevator = elevator
@@ -128,6 +139,8 @@ class Elevator():
         out = re.match(cls.OUT, s)
         if (out != None):
             time, pid, now, id = float(out.group("time")), int(out.group("pid")), int(out.group("now")), int(out.group("id"))
+            if id not in elevators.keys():
+                raise Exception(s, None, "没有该电梯")
             elevator: Elevator = elevators[id]
             if (time < elevator.time):
                 raise Exception(s, elevator, "时间错误")
@@ -182,7 +195,8 @@ class Checker():
         self.requsets = PriorityQueue()
         with open(path, "r") as f:
             for data in f.readlines():
-                self.requsets.put(Request(data))
+                if data != '\n':
+                    self.requsets.put(Request(data))
         
         self.elevators = {}
         for config in settings.elevators:
@@ -214,6 +228,7 @@ class Checker():
                     now = request.time
                     self.persons[request.id] = Person(request)
                     stdin.write(bytes(str(request), 'utf-8'))
+                    stdin.flush()
                 stdin.close()
             threading.Thread(target=inputdata, args=(p.stdin, self.requsets), daemon=True).start()
             try:
@@ -226,6 +241,8 @@ class Checker():
                 self.result["state"] = "TLE"
                 self.task.update(self)
                 return
+            except Exception as e:
+                utils.printc("?")
         
         with open(log_path, "r") as f:
             try:
@@ -294,7 +311,7 @@ class CheckThread(threading.Thread):
             try:
                 checker.run()
             except Exception as e:
-                utils.printc(f"checkThread-{self.id} ecxtption--{checker}\n", "red", end='')
+                utils.printc(f"checkThread-{self.id} ecxtption{checker}\n{traceback.print_exc()}", "red", end='')
             
 class Task(threading.Thread):
     __id = 0
@@ -304,14 +321,15 @@ class Task(threading.Thread):
         with cls.__id_lock:
             cls.__id += 1
             return cls.__id
-    def __init__(self, num=10, jars = settings.jars) -> None:
+    def __init__(self, num=10, data_paths = [], jars = settings.jars) -> None:
+        """当 data_paths 存在时, 使用给定的数据路径进行测试, 此时 num 参数禁用"""
         super().__init__(daemon=True)
         self.id = self.getId()
         self.name = f"task-{self.id}"
         self.jars = jars
         self.checkers: list[Checker] = []
-        self.data_paths = []
-        self.num = num
+        self.data_paths = data_paths
+        self.num = num if data_paths == [] else 0
         self.update_lock = threading.Lock()
         self.funish_num = num * len(jars)
         self.event = threading.Event()
@@ -319,7 +337,13 @@ class Task(threading.Thread):
         
         
     def run(self):
-        for i in range(self.num):
+        for _ in range(self.num):
+            path = Generator().generate()
+            for jar in self.jars:
+                checker = Checker(path, jar, self)
+                self.checkers.append(checker)
+                Program().checkers.put(checker)
+        for path in self.data_paths:
             path = Generator().generate()
             for jar in self.jars:
                 checker = Checker(path, jar, self)
@@ -366,11 +390,9 @@ class Generator():
             utils.printc(f"没有可用的数据生成器", "red")
             
     def getId(self):
-        self.__data_id_lock.acquire()
-        self.data_id += 1
-        ret = self.data_id
-        self.__data_id_lock.release()
-        return ret
+        with self.__data_id_lock:
+            self.data_id += 1
+            return self.data_id
     
     def generate(self, generators=None):
         id = self.getId()

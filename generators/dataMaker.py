@@ -1,11 +1,18 @@
+'''
+Author: ltt
+Date: 2023-03-25 13:07:58
+LastEditors: ltt
+LastEditTime: 2023-03-26 10:04:41
+FilePath: dataMaker.py
+'''
 import random
-REQUESTNUM = 30
+REQUESTNUM = 50
 UPNUM = 15
 DOWNNUM = 15
 gapLow = 1  # 0.1s
 gapHigh = 10 # 1s
 currentTime = 1.0
-for i in range(1,31) :
+for i in range(1,REQUESTNUM+1) :
     currentTime += 0.1 * (random.randint(gapLow, gapHigh))
     if UPNUM==0 :
         fromDoor = random.randint(3, 11)
