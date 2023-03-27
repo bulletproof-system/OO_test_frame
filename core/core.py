@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-03-27 07:51:27
+LastEditTime: 2023-03-27 11:01:17
 FilePath: core.py
 '''
 import sys, os
@@ -208,57 +208,59 @@ class Checker():
         
     def run(self):
         log_path = os.path.join("temp", f"checker-{self.id}.log")
-        with open(log_path, "w") as f:
-            p = subprocess.Popen(self.commond, shell=False, 
-                                stdin=subprocess.PIPE, stdout=f)
-            self.result["state"] = "RUNNING"
-            self.task.update(self)
-            def inputdata(stdin, requests: PriorityQueue):
-                now = 0
-                while not requests.empty():
-                    request: Request = requests.get()
-                    time.sleep(request.time - now)
-                    now = request.time
-                    self.persons[request.id] = Person(request)
-                    stdin.write(bytes(str(request), 'utf-8'))
-                    stdin.flush()
-                stdin.close()
-            threading.Thread(target=inputdata, args=(p.stdin, self.requsets), daemon=True).start()
-            try:
-                return_code = p.wait()
-                if (return_code != 0):
-                    self.result["state"] = "RE"
-                    self.task.update(self)
-                    return
-            except subprocess.TimeoutExpired as e:
-                self.result["state"] = "TLE"
+        try:
+            with open(log_path, "w") as f:
+                p = subprocess.Popen(self.commond, shell=False, 
+                                    stdin=subprocess.PIPE, stdout=f, stderr=f)
+                self.result["state"] = "RUNNING"
                 self.task.update(self)
-                return
-            except Exception as e:
-                utils.printc("?")
-        
-        with open(log_path, "r") as f:
-            try:
-                for info in f.readlines():
-                    Elevator.parse(self.elevators, self.persons, info)
-            except Exception as e:
-                self.result["state"] = "WA"
-                self.result["result"] = '\n'.join([e.args[2], e.args[0], str(e.args[1])])
-                self.task.update(self)
-                return
-        for elevator in self.elevators.values():
-            if len(elevator.passengers):
-                self.result["state"] = "WA"
-                self.result["result"] = '\n'.join(["电梯非空", str(elevator)])
-                self.task.update(self)
-                return
-        for person in self.persons.values():
-            if person.now != person.to:
-                self.result["state"] = "WA"
-                self.result["result"] = '\n'.join(["乘客未送达", str(person)])
-                self.task.update(self)
-                return
-        self.result["state"] = "AC"
+                def inputdata(stdin, requests: PriorityQueue):
+                    now = 0
+                    while not requests.empty():
+                        request: Request = requests.get()
+                        time.sleep(request.time - now)
+                        now = request.time
+                        self.persons[request.id] = Person(request)
+                        stdin.write(bytes(str(request), 'utf-8'))
+                        stdin.flush()
+                    stdin.close()
+                threading.Thread(target=inputdata, args=(p.stdin, self.requsets), daemon=True).start()
+                try:
+                    return_code = p.wait()
+                    if (return_code != 0):
+                        self.result["state"] = "RE"
+                        raise Exception()
+                except subprocess.TimeoutExpired as e:
+                    self.result["state"] = "TLE"
+                    raise Exception()
+                except Exception as e:
+                    utils.printc("?")
+            
+            with open(log_path, "r") as f:
+                try:
+                    for info in f.readlines():
+                        Elevator.parse(self.elevators, self.persons, info)
+                except Exception as e:
+                    self.result["state"] = "WA"
+                    self.result["result"] = '\n'.join([e.args[2], e.args[0], str(e.args[1])])
+                    raise Exception()
+            for elevator in self.elevators.values():
+                if len(elevator.passengers):
+                    self.result["state"] = "WA"
+                    self.result["result"] = '\n'.join(["电梯非空", str(elevator)])
+                    raise Exception()
+            for person in self.persons.values():
+                if person.now != person.to:
+                    self.result["state"] = "WA"
+                    self.result["result"] = '\n'.join(["乘客未送达", str(person)])
+                    raise Exception()
+            self.result["state"] = "AC"
+        except Exception as e:
+            pass
+        with open(log_path, "r+", encoding="utf-8") as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(str(self) + content)
         self.task.update(self)
         return
         
@@ -305,6 +307,8 @@ class CheckThread(threading.Thread):
                 checker.run()
             except Exception as e:
                 utils.printc(f"checkThread-{self.id} ecxtption{checker}\n{traceback.print_exc()}", "red", end='')
+            utils.printc(f"checkThread-{self.id} finish on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}", "blue")    
+        utils.printc(f"checkThread-{self.id} stop", "blue")
             
 class Task(threading.Thread):
     __id = 0
@@ -324,7 +328,7 @@ class Task(threading.Thread):
         self.data_paths = data_paths
         self.num = num if data_paths == [] else 0
         self.update_lock = threading.Lock()
-        self.funish_num = num * len(jars)
+        self.funish_num = len(data_paths) * len(jars)
         self.event = threading.Event()
         self.df = pd.DataFrame()
         
@@ -337,7 +341,6 @@ class Task(threading.Thread):
                 self.checkers.append(checker)
                 Program().checkers.put(checker)
         for path in self.data_paths:
-            path = Generator().generate()
             for jar in self.jars:
                 checker = Checker(path, jar, self)
                 self.checkers.append(checker)
@@ -346,7 +349,6 @@ class Task(threading.Thread):
         utils.printc(f"{self.name} finish\n", "green", end='')
     
     def dump(self):
-        utils.mkdir("output")
         path = os.path.join("output", self.name+".csv")
         self.df.to_csv(path)
     
