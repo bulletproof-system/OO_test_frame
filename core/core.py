@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-03-27 11:42:14
+LastEditTime: 2023-03-27 16:54:42
 FilePath: core.py
 '''
 import sys, os
@@ -76,6 +76,8 @@ class Elevator():
                 raise Exception(s, elevator, "在电梯开门时移动")
             if (time - elevator.time < elevator.MOVE_TIME):
                 raise Exception(s, elevator, "移动时间间隔错误")
+            if (abs(elevator.now - now) != 1):
+                raise Exception(s, elevator, "两次移动楼层差不为 1")
             elevator.now = now
             elevator.time = time
             return
@@ -89,6 +91,8 @@ class Elevator():
                 raise Exception(s, elevator, "无效开门动作(门已打开)")
             if (elevator.now != now):
                 raise Exception(s, elevator, "电梯不在当前层")
+            if (elevator.floors.get(now, None) == None):
+                raise Exception(s, elevator, "电梯不能在该层开门")
             elevator.state = "open"
             elevator.time = time
             return
@@ -104,6 +108,8 @@ class Elevator():
                 raise Exception(s, elevator, "开关门时间间隔过短")
             if (elevator.now != now):
                 raise Exception(s, elevator, "电梯不在当前层")
+            if (elevator.floors.get(now, None) == None):
+                raise Exception(s, elevator, "电梯不能在该层关门")
             elevator.state = "close"
             elevator.time = time
             return
