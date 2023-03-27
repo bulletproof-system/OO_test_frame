@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-03-27 11:01:17
+LastEditTime: 2023-03-27 11:42:14
 FilePath: core.py
 '''
 import sys, os
@@ -205,13 +205,14 @@ class Checker():
         }
         self.task = task
         self.task.update(self)
+        self.error = ''
         
     def run(self):
         log_path = os.path.join("temp", f"checker-{self.id}.log")
         try:
             with open(log_path, "w") as f:
                 p = subprocess.Popen(self.commond, shell=False, 
-                                    stdin=subprocess.PIPE, stdout=f, stderr=f)
+                                    stdin=subprocess.PIPE, stdout=f, stderr=subprocess.PIPE)
                 self.result["state"] = "RUNNING"
                 self.task.update(self)
                 def inputdata(stdin, requests: PriorityQueue):
@@ -226,7 +227,8 @@ class Checker():
                     stdin.close()
                 threading.Thread(target=inputdata, args=(p.stdin, self.requsets), daemon=True).start()
                 try:
-                    return_code = p.wait()
+                    return_code = p.wait(timeout=settings.timeout)
+                    self.error = p.stderr.read().decode()
                     if (return_code != 0):
                         self.result["state"] = "RE"
                         raise Exception()
@@ -260,7 +262,7 @@ class Checker():
         with open(log_path, "r+", encoding="utf-8") as f:
             content = f.read()
             f.seek(0, 0)
-            f.write(str(self) + content)
+            f.write(str(self) + self.error + content)
         self.task.update(self)
         return
         
@@ -279,8 +281,12 @@ class Program():
         self.threads: list[CheckThread] = []
         self.checkers = Queue()
         self.stop_flag = False
+        os.makedirs("input", exist_ok=True)
+        os.makedirs("output", exist_ok=True)
+        os.makedirs("temp", exist_ok=True)
 
     def start(self):
+        utils.printc("Program start...\n", "green", end='')
         for i in range(settings.threads):
             checkThread = CheckThread(i)
             checkThread.start()
@@ -290,6 +296,7 @@ class Program():
         self.stop_flag = True
         for thread in self.threads:
             thread.join()
+        utils.printc("Program stop\n", "green", end='')
         
 class CheckThread(threading.Thread):
     def __init__(self, id) -> None:
@@ -302,13 +309,13 @@ class CheckThread(threading.Thread):
                 checker: Checker = Program().checkers.get(timeout = 5)
             except:
                 continue
-            utils.printc(f"checkThread-{self.id} running on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}", "blue")
+            utils.printc(f"checkThread-{self.id} running on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}\n", "blue", end='')
             try:
                 checker.run()
             except Exception as e:
                 utils.printc(f"checkThread-{self.id} ecxtption{checker}\n{traceback.print_exc()}", "red", end='')
-            utils.printc(f"checkThread-{self.id} finish on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}", "blue")    
-        utils.printc(f"checkThread-{self.id} stop", "blue")
+            utils.printc(f"checkThread-{self.id} finish on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}\n", "blue", end='')    
+        utils.printc(f"checkThread-{self.id} stop\n", "blue", end='')
             
 class Task(threading.Thread):
     __id = 0
