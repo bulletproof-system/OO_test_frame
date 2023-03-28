@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-03-27 16:54:42
+LastEditTime: 2023-03-28 14:56:49
 FilePath: core.py
 '''
 import sys, os
@@ -270,7 +270,13 @@ class Checker():
             f.seek(0, 0)
             f.write(str(self) + self.error + content)
         self.task.update(self)
+        if settings.display.brief:
+            if (self.result["state"] == "AC"):
+                os.remove(log_path)
         return
+    
+    def getState(self):
+        return self.result["state"]
         
     def __str__(self):
         return f"""
@@ -320,7 +326,8 @@ class CheckThread(threading.Thread):
                 checker.run()
             except Exception as e:
                 utils.printc(f"checkThread-{self.id} ecxtption{checker}\n{traceback.print_exc()}", "red", end='')
-            utils.printc(f"checkThread-{self.id} finish on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}\n", "blue", end='')    
+            utils.printc(f"checkThread-{self.id} finish on checker-{checker.id}, data-{checker.data_name}, project-{checker.jar_name}, state-{checker.getState()}\n", 
+                         "blue" if checker.getState() == "AC" else "red", end='')    
         utils.printc(f"checkThread-{self.id} stop\n", "blue", end='')
             
 class Task(threading.Thread):
@@ -404,7 +411,6 @@ class Generator():
     
     def generate(self, generators=None):
         id = self.getId()
-        utils.mkdir("input")
         path = os.path.join("input", f"data-{id}"+".in")
         command = random.choice(list(self.generators.values()))
         with open(path, "w") as f:
