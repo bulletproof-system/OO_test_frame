@@ -6,19 +6,18 @@
 	"timeout" : 100,
 	// 同时评测线程数
 	"threads" : 50,
+	"display" : {
+		// 仅保存非 AC log 文件
+		"brief" : true
+	},
 	// 项目
 	"jars" : [
-		"D:\\LTT\\repository\\OO\\homework_5\\homework_5.jar",
-		"D:\\LTT\\repository\\OO\\homework_5\\homework_5_old.jar",
-		// "D:\\LTT\\repository\\OO\\homework_5\\homework_5_wrong.jar",
-		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl.jar",
-		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl2.jar",
-		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\hhl2-2.jar",
-		"D:\\LTT\\repository\\OO\\OO_test_frame\\projects\\qshr.jar",
+		"D:\\LTT\\repository\\OO\\homework_6\\homework_6.jar",
 	],
 	// 数据生成器
 	"generators" : [
-		"generators\\dataMaker.py",
+		// "generators\\dataMaker.py",
+		"generators\\dataMaker-2.py",
 		"generators\\data_2.py"
 	],
 	// 电梯配置
