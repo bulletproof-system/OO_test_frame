@@ -1,3 +1,10 @@
+'''
+Author: ltt
+Date: 2023-03-31 13:46:14
+LastEditors: ltt
+LastEditTime: 2023-03-31 21:37:33
+FilePath: Task.py
+'''
 import threading, os
 import pandas as pd
 from config import settings
@@ -7,6 +14,8 @@ from core import utils
 from core.core import Program
 from core.checker import Checker
 from core.generator import Generator
+from core.data import Data
+from core.project import Project
 
 class Task(threading.Thread):
     __id = 0
@@ -35,12 +44,12 @@ class Task(threading.Thread):
         for _ in range(self.num):
             path = Generator().generate()
             for jar in self.jars:
-                checker = Checker(path, jar, self)
+                checker = Checker(Data(path), Project(jar), self)
                 self.checkers.append(checker)
                 Program().checkers.put(checker)
         for path in self.data_paths:
             for jar in self.jars:
-                checker = Checker(path, jar, self)
+                checker = Checker(Data(path), Project(jar), self)
                 self.checkers.append(checker)
                 Program().checkers.put(checker)
         self.event.wait()
@@ -50,13 +59,14 @@ class Task(threading.Thread):
         path = os.path.join("output", self.name+".csv")
         self.df.to_csv(path)
     
-    def update(self, checker: Checker):
+    def update(self, project_name, data_name, state, run_time):
         with self.update_lock:
-            (_, data_name, _) = utils.split(checker.path)
-            (_, project_name, _) = utils.split(checker.jar_name)
-            self.df.loc[data_name, project_name] = checker.result["state"]
+            if (run_time != -1):
+                self.df.loc[data_name, project_name] = state + '-' + str(run_time) + 's'
+            else:
+                self.df.loc[data_name, project_name] = state
             self.dump()
-            if checker.result["state"] != "RUNNING" and checker.result["state"] != "WAITTING":
+            if state != "RUNNING" and state != "WAITTING":
                 self.funish_num -= 1
                 if (self.funish_num == 0):
                     self.event.set()
