@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-03-31 21:34:39
+LastEditTime: 2023-03-31 23:48:27
 FilePath: Project.py
 '''
 import threading, os, subprocess, time
@@ -24,6 +24,8 @@ class Project():
             return super().__new__(cls)
     def __init__(self, path) -> None:
         with self.__projects_lock:
+            if (self.projects.get(path, None) != None):
+                return
             self.projects[path] = self
             self.path = path
             (_, self.name, _) = utils.split(path)

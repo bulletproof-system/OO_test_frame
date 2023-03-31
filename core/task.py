@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:46:14
 LastEditors: ltt
-LastEditTime: 2023-03-31 21:37:33
+LastEditTime: 2023-03-31 22:47:53
 FilePath: Task.py
 '''
 import threading, os
@@ -35,7 +35,7 @@ class Task(threading.Thread):
         self.data_paths = data_paths
         self.num = num if data_paths == [] else 0
         self.update_lock = threading.Lock()
-        self.funish_num = len(data_paths) * len(jars)
+        self.funish_num = 0
         self.event = threading.Event()
         self.df = pd.DataFrame()
         
@@ -46,11 +46,13 @@ class Task(threading.Thread):
             for jar in self.jars:
                 checker = Checker(Data(path), Project(jar), self)
                 self.checkers.append(checker)
+                self.funish_num += 1
                 Program().checkers.put(checker)
         for path in self.data_paths:
             for jar in self.jars:
                 checker = Checker(Data(path), Project(jar), self)
                 self.checkers.append(checker)
+                self.funish_num += 1
                 Program().checkers.put(checker)
         self.event.wait()
         utils.printc(f"{self.name} finish\n", "green", end='')

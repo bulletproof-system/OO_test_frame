@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:10
 LastEditors: ltt
-LastEditTime: 2023-03-31 21:09:36
+LastEditTime: 2023-03-31 23:47:33
 FilePath: Data.py
 '''
 import threading
@@ -21,6 +21,8 @@ class Data():
             return super().__new__(cls)
     def __init__(self, path) -> None:
         with self.__datas_lock:
+            if (self.datas.get(path, None) != None):
+                return
             self.datas[path] = self
             self.path = path
             (_, self.name, _) = utils.split(path)
