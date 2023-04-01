@@ -164,11 +164,13 @@ cython_debug/
 input
 output
 temp
+log
 settings.json
 .vscode
 projects
 generators\data_2\stdin.txt
 download
 main.py
+input_self
 # Ignore dynaconf secret files
 .secrets.*

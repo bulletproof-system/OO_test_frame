@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-04-01 09:35:26
+LastEditTime: 2023-04-01 17:13:56
 FilePath: core.py
 '''
 from config import settings
@@ -22,6 +22,7 @@ class Program():
         os.makedirs("input", exist_ok=True)
         os.makedirs("output", exist_ok=True)
         os.makedirs("temp", exist_ok=True)
+        os.makedirs("log", exist_ok=True)
 
     def start(self):
         utils.printc("Program start...\n", "green", end='')

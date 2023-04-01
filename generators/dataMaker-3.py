@@ -2,18 +2,18 @@
 Author: ltt
 Date: 2023-03-31 21:02:56
 LastEditors: ltt
-LastEditTime: 2023-04-01 11:44:53
+LastEditTime: 2023-04-01 13:51:16
 FilePath: dataMaker-3.py
 '''
 import random
 
 ################################参数
-REQUESTNUM = 15
+REQUESTNUM = 70
 ASSEMBLE = 7
 GAPLOW = 10  # 1s
 GAPHIGH = 30 # 3s
 STARTTIME = 1.0
-ENDTIME = 5
+ENDTIME = 50
 
 ################################预处理ID
 MAXNUMBER = 101

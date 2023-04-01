@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-01 11:51:20
+LastEditTime: 2023-04-01 17:22:28
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -39,13 +39,17 @@ class Checker():
             "result" : ""
         }
         self.task = task
-        self.log_path = os.path.join("temp", f"checker-{self.id}.log")
+        self.log_path = os.path.join("log", f"checker-{self.id}.log")
+        self.error_path = os.path.join("temp", f"checker-{self.id}.err")
         self.update()
         
     def run(self):
         self.result["state"] = "RUNNING"
         self.update()
-        (self.result["state"], self.result["stderr"]) = self.project.run(self.data, self.log_path)
+        self.result["state"]= self.project.run(self.data, self.log_path, self.error_path)
+        with open(self.error_path, "r") as err:
+            self.result["error"] = err.read()
+        os.remove(self.error_path)
         try:
             if (self.result["state"] != "RUNNING"):
                 raise Exception("")
