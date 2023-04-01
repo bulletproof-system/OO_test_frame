@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:10
 LastEditors: ltt
-LastEditTime: 2023-03-31 23:47:33
+LastEditTime: 2023-04-01 10:08:03
 FilePath: Data.py
 '''
 import threading
@@ -29,7 +29,11 @@ class Data():
             self.requests = []
             with open(path, "r") as f:
                 for line in f.readlines():
-                    self.requests.append(Request.parse(line))
+                    request = Request.parse(line)
+                    if type(request) == WrongFormat:
+                        utils.printc(f"wrong_data in {self.path}\n", "red", end='')
+                        continue
+                    self.requests.append(request)
             self.requests.sort()
 
             

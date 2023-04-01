@@ -1,6 +1,7 @@
 {
 	// JAVA_HOME 路径
 	"java_home" : "your\\java_home",
+	// 暂时不用
 	"project_path" : "",
 	// 单个测试点最大时限
 	"timeout" : 100,

@@ -2,8 +2,8 @@
 Author: ltt
 Date: 2023-03-31 13:44:39
 LastEditors: ltt
-LastEditTime: 2023-03-31 22:04:35
-FilePath: Request.py
+LastEditTime: 2023-04-01 10:05:08
+FilePath: request.py
 '''
 import re
 from config import settings
@@ -52,7 +52,18 @@ class Info():
         elif re.match(MaintainAble.pattern, s) != None:
             return MaintainAble(s)
         else:
-            return None
+            return WrongFormat(s)
+
+class WrongFormat(Info):
+    def __init__(self, s: str) -> None:
+        super().__init__(s)
+        self.time = -1
+    
+    def __str__(self) -> str:
+        return self.string
+    
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+        raise Exception("格式错误")
 
 class Arrive(Info):
     # [时间戳]ARRIVE-所在层-电梯ID
@@ -226,6 +237,16 @@ class MaintainAble(Info):
         elevator.main_tain = "ready"
 
 class Request(Info):
+    @classmethod
+    def parse(cls, s: str):
+        if re.match(PersonRequest.pattern, s) != None:
+            return PersonRequest(s)
+        elif re.match(ElevatorRequest.pattern, s) != None:
+            return ElevatorRequest(s)
+        elif re.match(MaintainRequest.pattern, s) != None:
+            return MaintainRequest(s)
+        else:
+            return WrongFormat(s)
     def get_time(self):
         return super().get_time() - settings.max_time_sync_error_second
         

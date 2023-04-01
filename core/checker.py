@@ -2,8 +2,8 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-03-31 22:51:02
-FilePath: Checker.py
+LastEditTime: 2023-04-01 10:03:11
+FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
 from config import settings
@@ -51,8 +51,8 @@ class Checker():
                 raise Exception("")
             infos = []
             with open(self.log_path, "r") as f:
-                for info in f.readlines():
-                    infos.append(Info.parse(info))
+                for line in f.readlines():
+                    infos.append(Info.parse(line))
             infos += self.data.requests
             infos.sort()
             for info in infos:
