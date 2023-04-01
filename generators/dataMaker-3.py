@@ -2,13 +2,13 @@
 Author: ltt
 Date: 2023-03-31 21:02:56
 LastEditors: ltt
-LastEditTime: 2023-03-31 21:49:58
+LastEditTime: 2023-04-01 10:57:16
 FilePath: dataMaker-3.py
 '''
 import random
 
 ################################参数
-REQUESTNUM = 70
+REQUESTNUM = 15
 ASSEMBLE = 7
 GAPLOW = 10  # 1s
 GAPHIGH = 30 # 3s
@@ -74,7 +74,7 @@ while request != 0 :
     
     type = random.randint(1, 3)   # 1:REQUEST 2:MAINTAIN 3:ADD
     toMaintain = random.randint(1, elevatorNum)
-    while (type==2 and ((toMaintain<=6 and maintainNum == 4) or maintained[toMaintain]==True or (currentTime - createTime[toMaintain] < 2.0))) or (type == 3 and runNum == 10):
+    while type==3 or (type==2 and ((toMaintain<=6 and maintainNum == 4) or maintained[toMaintain]==True or (currentTime - createTime[toMaintain] < 2.0))) or (type == 3 and runNum == 10):
         type = random.randint(1, 3)
         toMaintain = random.randint(1, elevatorNum)
     #REQUEST
@@ -93,6 +93,8 @@ while request != 0 :
         request -= 1
         maintained[toMaintain] = True
         runNum -= 1
+        if toMaintain <= 6 :
+            maintainNum += 1
         print("[" + "{:.1f}".format(currentTime) + "]" + "MAINTAIN-Elevator-" + str(elevators[toMaintain]))
     #ADD
     if type==3 :
