@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-01 10:03:11
+LastEditTime: 2023-04-01 11:51:20
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -55,6 +55,7 @@ class Checker():
                     infos.append(Info.parse(line))
             infos += self.data.requests
             infos.sort()
+            self.result["run_time"] = infos[-1].time
             for info in infos:
                 self.__parse(info)
             for elevator in self.elevators.values():
@@ -95,6 +96,7 @@ id : {self.id}
 project : {self.result["project"]}
 test_data : {self.result["test_data"]}
 state : {self.result["state"]}
+run_time : {self.result["run_time"]}
 stderr : 
 {self.result["stderr"]}
 "result" : 
