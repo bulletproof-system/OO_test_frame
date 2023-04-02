@@ -2,10 +2,10 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-02 10:09:16
-FilePath: Project.py
+LastEditTime: 2023-04-02 10:55:40
+FilePath: project.py
 '''
-import threading, os, subprocess, time, psutil
+import threading, os, subprocess, time, psutil, platform
 from config import settings
 
 from core import utils
@@ -38,7 +38,10 @@ class Project():
                     p = subprocess.Popen(self.commond, shell=False, 
                                         stdin=subprocess.PIPE, stdout=log, stderr=err)
                     info = psutil.Process(p.pid)
-                    (user, system, children_user, children_system) = info.cpu_times()
+                    if platform.system() == "Linux":
+                        (user, system, children_user, children_system, _) = info.cpu_times()
+                    else:
+                        (user, system, children_user, children_system) = info.cpu_times()
                     def inputdata(stdin, requests: list[Request]):
                         now = 0
                         for request in requests:
@@ -50,7 +53,10 @@ class Project():
                         nonlocal info, user, system, children_user, children_system
                         try:
                             while True:
-                                (user, system, children_user, children_system) = info.cpu_times()
+                                if platform.system() == "Linux":
+                                    (user, system, children_user, children_system, _) = info.cpu_times()
+                                else:
+                                    (user, system, children_user, children_system) = info.cpu_times()
                                 time.sleep(0.1)
                         except:
                             pass
