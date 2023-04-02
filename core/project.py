@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-02 15:26:07
+LastEditTime: 2023-04-02 17:38:08
 FilePath: Project.py
 '''
 import threading, os, subprocess, time, psutil
@@ -52,7 +52,6 @@ class Project():
                             while True:
                                 cpu_time = sum(p.cpu_times()[:4])
                                 time.sleep(0.1)
-                                print(f"cpu-time-{cpu_time}")
                         except:
                             pass
                     threading.Thread(target=inputdata, args=(p.stdin, data.requests), daemon=True).start()
