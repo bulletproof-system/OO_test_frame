@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-01 17:22:28
+LastEditTime: 2023-04-02 10:05:25
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -35,6 +35,7 @@ class Checker():
             "test_data" : self.data.path,
             "state" : "WAITTING",
             "run_time" : -1,
+            "cpu_time" : -1,
             "stderr" : "",
             "result" : ""
         }
@@ -46,7 +47,7 @@ class Checker():
     def run(self):
         self.result["state"] = "RUNNING"
         self.update()
-        self.result["state"]= self.project.run(self.data, self.log_path, self.error_path)
+        self.result["state"], self.result["cpu_time"]= self.project.run(self.data, self.log_path, self.error_path)
         with open(self.error_path, "r") as err:
             self.result["error"] = err.read()
         os.remove(self.error_path)
@@ -92,7 +93,7 @@ class Checker():
             raise Exception('\n'.join(ret))
     
     def update(self):
-        self.task.update(self.project.name, self.data.name, self.result["state"], self.result["run_time"])
+        self.task.update(self.project.name, self.data.name, self.result["state"], self.result["run_time"], self.result["cpu_time"])
 
     def __str__(self):
         return f"""
@@ -101,6 +102,7 @@ project : {self.result["project"]}
 test_data : {self.result["test_data"]}
 state : {self.result["state"]}
 run_time : {self.result["run_time"]}
+cpu_time : {self.result["cpu_time"]}
 stderr : 
 {self.result["stderr"]}
 "result" : 

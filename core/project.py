@@ -2,12 +2,11 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-01 17:12:56
+LastEditTime: 2023-04-02 10:09:16
 FilePath: Project.py
 '''
-import threading, os, subprocess, time
+import threading, os, subprocess, time, psutil
 from config import settings
-from queue import PriorityQueue
 
 from core import utils
 from core.data import Data
@@ -38,6 +37,8 @@ class Project():
                 with open(error_path, "w") as err:
                     p = subprocess.Popen(self.commond, shell=False, 
                                         stdin=subprocess.PIPE, stdout=log, stderr=err)
+                    info = psutil.Process(p.pid)
+                    (user, system, children_user, children_system) = info.cpu_times()
                     def inputdata(stdin, requests: list[Request]):
                         now = 0
                         for request in requests:
@@ -46,16 +47,28 @@ class Project():
                             stdin.write(bytes(str(request), 'utf-8'))
                             stdin.flush()
                         stdin.close()
+                        nonlocal info, user, system, children_user, children_system
+                        try:
+                            while True:
+                                (user, system, children_user, children_system) = info.cpu_times()
+                                time.sleep(0.1)
+                        except:
+                            pass
                     threading.Thread(target=inputdata, args=(p.stdin, data.requests), daemon=True).start()
                     try:
                         return_code = p.wait(timeout=settings.timeout)
+                        p.kill()
+                        cpu_time = user + system + children_user + children_system
                         if (return_code != 0):
                             state = "RE"
-                        return state
+                        if (cpu_time > 10):
+                            state = "CTLE"
+                        return state, cpu_time
                     except subprocess.TimeoutExpired as e:
-                        stderr = p.stderr.read().decode()
+                        p.kill()
+                        cpu_time = user + system + children_user + children_system
                         state = "TLE"
-                        return state
+                        return state, cpu_time
         except :
             state = "UE"
-            return state
+            return state, -1

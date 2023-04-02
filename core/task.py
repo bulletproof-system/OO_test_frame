@@ -2,8 +2,8 @@
 Author: ltt
 Date: 2023-03-31 13:46:14
 LastEditors: ltt
-LastEditTime: 2023-03-31 22:47:53
-FilePath: Task.py
+LastEditTime: 2023-04-02 10:05:42
+FilePath: task.py
 '''
 import threading, os
 import pandas as pd
@@ -61,10 +61,10 @@ class Task(threading.Thread):
         path = os.path.join("output", self.name+".csv")
         self.df.to_csv(path)
     
-    def update(self, project_name, data_name, state, run_time):
+    def update(self, project_name, data_name, state, run_time, cpu_time):
         with self.update_lock:
             if (run_time != -1):
-                self.df.loc[data_name, project_name] = state + '-' + str(run_time) + 's'
+                self.df.loc[data_name, project_name] = f"{state}-({run_time}s,{cpu_time}s)"
             else:
                 self.df.loc[data_name, project_name] = state
             self.dump()
