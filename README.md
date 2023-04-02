@@ -1,6 +1,7 @@
 # OO_test_frame
 
 - OO homework 评测机框架
+- 支持 `windows`、`linux`
 
 ## 使用方式
 
@@ -30,13 +31,13 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 ### 查看结果
 
 - `output` 目录下，每个 `task` 生成一个 `.csv` 文件
-- `temp` 目录下，记录每次评测输出，对应关系可以从控制台的输出找到
+- `log` 目录下，记录每次评测输出，对应关系可以从控制台的输出找到
 
 ## 数据生成器
 
 ### 内置
 
-- `generators/dataMaker.py`  made by hhl
+- `generators/dataMaker*.py`  made by hhl
 
 ### 自定义
 
