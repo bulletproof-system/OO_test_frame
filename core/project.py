@@ -2,10 +2,10 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-02 10:55:40
-FilePath: project.py
+LastEditTime: 2023-04-02 15:26:07
+FilePath: Project.py
 '''
-import threading, os, subprocess, time, psutil, platform
+import threading, os, subprocess, time, psutil
 from config import settings
 
 from core import utils
@@ -31,50 +31,41 @@ class Project():
             self.commond = [os.path.join(settings.java_home, "bin", "java"), "-jar", path]
 
     def run(self, data: Data, log_path: str, error_path):
-        state = "RUNNING"
+        state, cpu_time = "RUNNING", -1
         try:
             with open(log_path, "w") as log:
                 with open(error_path, "w") as err:
-                    p = subprocess.Popen(self.commond, shell=False, 
+                    p = psutil.Popen(self.commond, shell=False, 
                                         stdin=subprocess.PIPE, stdout=log, stderr=err)
-                    info = psutil.Process(p.pid)
-                    if platform.system() == "Linux":
-                        (user, system, children_user, children_system, _) = info.cpu_times()
-                    else:
-                        (user, system, children_user, children_system) = info.cpu_times()
+                    cpu_time = sum(p.cpu_times()[:4])
                     def inputdata(stdin, requests: list[Request]):
                         now = 0
+                        nonlocal p, cpu_time
                         for request in requests:
                             time.sleep(request.time - now)
                             now = request.time
                             stdin.write(bytes(str(request), 'utf-8'))
+                            cpu_time = sum(p.cpu_times()[:4])
                             stdin.flush()
                         stdin.close()
-                        nonlocal info, user, system, children_user, children_system
                         try:
                             while True:
-                                if platform.system() == "Linux":
-                                    (user, system, children_user, children_system, _) = info.cpu_times()
-                                else:
-                                    (user, system, children_user, children_system) = info.cpu_times()
+                                cpu_time = sum(p.cpu_times()[:4])
                                 time.sleep(0.1)
+                                print(f"cpu-time-{cpu_time}")
                         except:
                             pass
                     threading.Thread(target=inputdata, args=(p.stdin, data.requests), daemon=True).start()
                     try:
                         return_code = p.wait(timeout=settings.timeout)
-                        p.kill()
-                        cpu_time = user + system + children_user + children_system
                         if (return_code != 0):
                             state = "RE"
                         if (cpu_time > 10):
                             state = "CTLE"
                         return state, cpu_time
                     except subprocess.TimeoutExpired as e:
-                        p.kill()
-                        cpu_time = user + system + children_user + children_system
                         state = "TLE"
                         return state, cpu_time
         except :
             state = "UE"
-            return state, -1
+            return state, cpu_time
