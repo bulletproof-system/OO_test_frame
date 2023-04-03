@@ -2,8 +2,8 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-02 17:38:08
-FilePath: Project.py
+LastEditTime: 2023-04-03 09:14:02
+FilePath: project.py
 '''
 import threading, os, subprocess, time, psutil
 from config import settings
@@ -41,14 +41,14 @@ class Project():
                     def inputdata(stdin, requests: list[Request]):
                         now = 0
                         nonlocal p, cpu_time
-                        for request in requests:
-                            time.sleep(request.time - now)
-                            now = request.time
-                            stdin.write(bytes(str(request), 'utf-8'))
-                            cpu_time = sum(p.cpu_times()[:4])
-                            stdin.flush()
-                        stdin.close()
                         try:
+                            for request in requests:
+                                time.sleep(request.time - now)
+                                now = request.time
+                                stdin.write(bytes(str(request), 'utf-8'))
+                                cpu_time = sum(p.cpu_times()[:4])
+                                stdin.flush()
+                            stdin.close()
                             while True:
                                 cpu_time = sum(p.cpu_times()[:4])
                                 time.sleep(0.1)
@@ -62,9 +62,19 @@ class Project():
                         if (cpu_time > 10):
                             state = "CTLE"
                         return state, cpu_time
-                    except subprocess.TimeoutExpired as e:
+                    except psutil.TimeoutExpired as e:
+                        try:
+                            p.kill()
+                        except:
+                            pass
                         state = "TLE"
                         return state, cpu_time
+                    except:
+                        try:
+                            p.kill()
+                        except:
+                            pass
+                        raise
         except :
             state = "UE"
             return state, cpu_time

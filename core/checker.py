@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-02 10:05:25
+LastEditTime: 2023-04-03 09:15:41
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -50,7 +50,6 @@ class Checker():
         self.result["state"], self.result["cpu_time"]= self.project.run(self.data, self.log_path, self.error_path)
         with open(self.error_path, "r") as err:
             self.result["error"] = err.read()
-        os.remove(self.error_path)
         try:
             if (self.result["state"] != "RUNNING"):
                 raise Exception("")
@@ -81,6 +80,7 @@ class Checker():
         if settings.display.brief:
             if (self.result["state"] == "AC"):
                 os.remove(self.log_path)
+        os.remove(self.error_path)
         return
 
     def __parse(self, info: Info):
