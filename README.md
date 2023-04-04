@@ -106,3 +106,7 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 ## 依赖
 
 - 使用命令 `pip install -r requirements.txt` 安装所需依赖模块
+
+### 已知问题
+
+- cpu 时间测量不准，项目使用 `psutil` 模块对 cpu 时间进行测量，只有在用 `jconsole` 连接对应进程时测量的时间才是准确的。
