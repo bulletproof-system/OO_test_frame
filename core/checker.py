@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-03 09:15:41
+LastEditTime: 2023-04-04 10:13:26
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -48,8 +48,6 @@ class Checker():
         self.result["state"] = "RUNNING"
         self.update()
         self.result["state"], self.result["cpu_time"]= self.project.run(self.data, self.log_path, self.error_path)
-        with open(self.error_path, "r") as err:
-            self.result["error"] = err.read()
         try:
             if (self.result["state"] != "RUNNING"):
                 raise Exception("")
@@ -72,6 +70,8 @@ class Checker():
                 self.result["state"] = "WA"
                 self.result["result"] = e.args[0]
         finally:
+            with open(self.error_path, "r") as err:
+                self.result["stderr"] = err.read()
             with open(self.log_path, "r+", encoding="utf-8") as f:
                 content = f.read()
                 f.seek(0, 0)
@@ -105,6 +105,6 @@ run_time : {self.result["run_time"]}
 cpu_time : {self.result["cpu_time"]}
 stderr : 
 {self.result["stderr"]}
-"result" : 
+result : 
 {self.result["result"]}
 """
