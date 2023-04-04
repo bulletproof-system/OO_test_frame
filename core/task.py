@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:46:14
 LastEditors: ltt
-LastEditTime: 2023-04-02 10:05:42
+LastEditTime: 2023-04-04 10:24:51
 FilePath: task.py
 '''
 import threading, os
@@ -31,7 +31,7 @@ class Task(threading.Thread):
         self.id = self.getId()
         self.name = f"task-{self.id}"
         self.jars = jars
-        self.checkers: list[Checker] = []
+        self.checkers: dict[Checker] = {}
         self.data_paths = data_paths
         self.num = num if data_paths == [] else 0
         self.update_lock = threading.Lock()
@@ -45,13 +45,13 @@ class Task(threading.Thread):
             path = Generator().generate()
             for jar in self.jars:
                 checker = Checker(Data(path), Project(jar), self)
-                self.checkers.append(checker)
+                self.checkers[checker] = None
                 self.funish_num += 1
                 Program().checkers.put(checker)
         for path in self.data_paths:
             for jar in self.jars:
                 checker = Checker(Data(path), Project(jar), self)
-                self.checkers.append(checker)
+                self.checkers[checker] = None
                 self.funish_num += 1
                 Program().checkers.put(checker)
         self.event.wait()
@@ -61,14 +61,16 @@ class Task(threading.Thread):
         path = os.path.join("output", self.name+".csv")
         self.df.to_csv(path)
     
-    def update(self, project_name, data_name, state, run_time, cpu_time):
+    def update(self, checker: Checker):
+        state =  checker.result["state"]
         with self.update_lock:
-            if (run_time != -1):
-                self.df.loc[data_name, project_name] = f"{state}-({run_time}s,{cpu_time}s)"
+            if (checker.result["run_time"] != -1):
+                self.df.loc[checker.data.name, checker.project.name] = f'{state}-({checker.result["run_time"]}s,{checker.result["cpu_time"]}s)'
             else:
-                self.df.loc[data_name, project_name] = state
+                self.df.loc[checker.data.name, checker.project.name] = state
             self.dump()
             if state != "RUNNING" and state != "WAITTING":
                 self.funish_num -= 1
+                self.checkers.pop(checker)
                 if (self.funish_num == 0):
                     self.event.set()

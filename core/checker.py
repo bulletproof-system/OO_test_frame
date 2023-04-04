@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-04 10:13:26
+LastEditTime: 2023-04-04 10:26:24
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -93,7 +93,7 @@ class Checker():
             raise Exception('\n'.join(ret))
     
     def update(self):
-        self.task.update(self.project.name, self.data.name, self.result["state"], self.result["run_time"], self.result["cpu_time"])
+        self.task.update(self)
 
     def __str__(self):
         return f"""
