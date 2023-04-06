@@ -2,18 +2,18 @@
 Author: ltt
 Date: 2023-03-31 21:02:56
 LastEditors: ltt
-LastEditTime: 2023-04-01 13:51:16
-FilePath: dataMaker-3.py
+LastEditTime: 2023-04-06 20:51:57
+FilePath: dataMaker-hw7.py
 '''
 import random
 
 ################################参数
-REQUESTNUM = 10
+REQUESTNUM = 70
 ASSEMBLE = 2
 GAPLOW = 5  # 1s
 GAPHIGH = 10 # 3s
 STARTTIME = 1
-ENDTIME = 10
+ENDTIME = 50
 KEEPORNOT = False #是否保留2台初始电梯
 NEWELEFLOORS = 5 #新电梯能到达的楼层数
 
