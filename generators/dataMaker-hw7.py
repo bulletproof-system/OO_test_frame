@@ -8,14 +8,17 @@ FilePath: dataMaker-hw7.py
 import random
 
 ################################参数
-REQUESTNUM = 70
-ASSEMBLE = 2
-GAPLOW = 5  # 1s
-GAPHIGH = 10 # 3s
-STARTTIME = 1
-ENDTIME = 50
-KEEPORNOT = False #是否保留2台初始电梯
-NEWELEFLOORS = 5 #新电梯能到达的楼层数
+REQUESTNUM = 70 # 总请求数
+ASSEMBLE = 2 # 同一时间戳同时发出请求量的乘客数量
+GAPLOW = 5  # 请求之间的最短时间间隔（单位为0.1s）
+GAPHIGH = 10 # 请求之间的最长时间间隔（单位为0.1s）
+STARTTIME = 1 # 第一个请求的最早时间（单位为1s）
+ENDTIME = 50 # 最后一个请求的最晚时间
+KEEPORNOT = True # 是否保留2台初始电梯
+NEWELEFLOORS = 5 # 新电梯能到达的楼层数
+ANTIMAINTAIN = False # 是否舍弃MAINTAIN请求
+ANTIADD = False #是否舍弃ADD请求
+RUNNUM = 10 # 同时可运行的最大电梯数
 
 ################################预处理ID
 MAXNUMBER = 101
@@ -71,6 +74,8 @@ request = REQUESTNUM
 def canGenerate(type, toMaintain):
     reach = [[False for _ in range(20)] for _ in range(20)]
     if type==2 :
+        if ANTIMAINTAIN :
+            return False
         if toMaintain<=6 and maintainNum == 4 and KEEPORNOT :
             return False
         if maintained[toMaintain] :
@@ -100,7 +105,9 @@ def canGenerate(type, toMaintain):
                 if reach[i][j] == False :
                     return False
     if type==3 :
-        if runNum == 10 :
+        if runNum == RUNNUM :
+            return False
+        if ANTIADD :
             return False
     return True
 
