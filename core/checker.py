@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-06 22:26:07
+LastEditTime: 2023-04-06 22:27:39
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -73,7 +73,7 @@ class Checker():
         except Exception as e:
             if self.result["state"] == "RUNNING":
                 self.result["state"] = "WA"
-                self.result["result"] = '\n'.join(e.args)
+                self.result["result"] = e.args[0]
         finally:
             with open(self.error_path, "r") as err:
                 self.result["stderr"] = err.read()
