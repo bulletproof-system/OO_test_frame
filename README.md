@@ -38,6 +38,9 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 ### 内置
 
 - `generators/dataMaker*.py`  made by hhl
+- `generators/dataMaker-hw7.py`  **为第七次作业对应的数据生成器**
+
+#### 
 
 ### 自定义
 
@@ -61,48 +64,48 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 
 ```json
 {
-	// JAVA_HOME 路径
-	"java_home" : "your\\java_home",
-	// 暂时不用
-	"project_path" : "",
-	// 单个测试点最大时限
-	"timeout" : 100,
-	// 同时评测线程数
-	"threads" : 50,
-	// 最大计时同步性误差
-	"max_time_sync_error_second" : 1,
-	"display" : {
-		// 仅保存非 AC log 文件
-		"brief" : true
-	},
-	// 项目
-	"jars" : [
-		"path\\to\\your\\project"
-	],
-	// 数据生成器
-	"generators" : [
-		"generators\\dataMaker-3.py"
-	],
-	// 楼层限制
-	"Mx" : 4,
-	"Nx" : 2,
-	// 电梯配置
-	"elevators": {
-		"default" : {
-			"initial_floor" : 1,
-			"capacity" : 6,
-			"floors" : [1,2,3,4,5,6,7,8,9,10,11],
-			"move_time" : 0.4,
-			"open_time" : 0.2,
-			"close_time" : 0.2
-		},
-		"1" : {},
-		"2" : {},
-		"3" : {},
-		"4" : {},
-		"5" : {},
-		"6" : {}
-	}
+    // JAVA_HOME 路径
+    "java_home" : "your\\java_home",
+    // 暂时不用
+    "project_path" : "",
+    // 单个测试点最大时限
+    "timeout" : 100,
+    // 同时评测线程数
+    "threads" : 50,
+    // 最大计时同步性误差
+    "max_time_sync_error_second" : 1,
+    "display" : {
+        // 仅保存非 AC log 文件
+        "brief" : true
+    },
+    // 项目
+    "jars" : [
+        "path\\to\\your\\project"
+    ],
+    // 数据生成器
+    "generators" : [
+        "generators\\dataMaker-3.py"
+    ],
+    // 楼层限制
+    "Mx" : 4,
+    "Nx" : 2,
+    // 电梯配置
+    "elevators": {
+        "default" : {
+            "initial_floor" : 1,
+            "capacity" : 6,
+            "floors" : [1,2,3,4,5,6,7,8,9,10,11],
+            "move_time" : 0.4,
+            "open_time" : 0.2,
+            "close_time" : 0.2
+        },
+        "1" : {},
+        "2" : {},
+        "3" : {},
+        "4" : {},
+        "5" : {},
+        "6" : {}
+    }
 }
 ```
 
