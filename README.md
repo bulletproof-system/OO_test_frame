@@ -49,7 +49,7 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 
    `^\[ *(?P<time>\d+\.\d+)\](?P<id>\d+)-FROM-(?P<from>\d+)-TO-(?P<to>\d+)$`
 
-   `^\[ *(?P<time>\d+\.\d+)\]ADD-Elevator-(?P<id>\d+)-(?P<initial_floor>\d+)-(?P<capacity>\d+)-(?P<move_time>\d+\.\d+)$`
+   `^\[ *(?P<time>\d+\.\d+)\]ADD-Elevator-(?P<id>\d+)-(?P<initial_floor>\d+)-(?P<capacity>\d+)-(?P<move_time>\d+\.\d+)-(?P<access>\d+)$`
 
    `^\[ *(?P<time>\d+\.\d+)\]MAINTAIN-Elevator-(?P<id>\d+)$`
 
@@ -83,6 +83,9 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 	"generators" : [
 		"generators\\dataMaker-3.py"
 	],
+	// 楼层限制
+	"Mx" : 4,
+	"Nx" : 2,
 	// 电梯配置
 	"elevators": {
 		"default" : {

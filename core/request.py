@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:44:39
 LastEditors: ltt
-LastEditTime: 2023-04-01 10:05:08
+LastEditTime: 2023-04-06 10:48:24
 FilePath: request.py
 '''
 import re
@@ -10,6 +10,7 @@ from config import settings
 
 from core.elevator import Elevator
 from core.person import Person
+from core.floor import Floor
 
 delta = 0.001
 
@@ -24,7 +25,7 @@ class Info():
     def to_string(self):
         return self.string
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         pass
     
     def __lt__(self, other):
@@ -62,7 +63,7 @@ class WrongFormat(Info):
     def __str__(self) -> str:
         return self.string
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         raise Exception("格式错误")
 
 class Arrive(Info):
@@ -75,7 +76,7 @@ class Arrive(Info):
         self.now = int(ret.group("now"))
         self.id = int(ret.group("id"))
 
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -104,7 +105,7 @@ class Open(Info):
         self.now = int(ret.group("now"))
         self.id = int(ret.group("id"))
 
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -115,9 +116,11 @@ class Open(Info):
         if elevator.now != self.now:
             raise Exception("电梯不在当前层", elevator)
         if elevator.floors.get(self.now, None) == None:
-            raise Exception("电梯不能在该层开门", elevator)
+            if elevator.main_tain != "accept":
+                raise Exception("电梯不能在该层开门", elevator)
         elevator.state = "open"
         elevator.time = self.get_time()
+        elevator.pre = elevator.passengers.copy()
 
 class Close(Info):
     # [时间戳]CLOSE-所在层-电梯ID
@@ -129,7 +132,7 @@ class Close(Info):
         self.now = int(ret.group("now"))
         self.id = int(ret.group("id"))
 
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -142,9 +145,18 @@ class Close(Info):
         if elevator.now != self.now:
             raise Exception("电梯不在当前层", elevator)
         if elevator.floors.get(self.now, None) == None:
-            raise Exception("电梯不能在该层关门", elevator)
+            if elevator.main_tain != "accept":
+                raise Exception("电梯不能在该层关门", elevator)
         elevator.state = "close"
+        flag = True
+        for i in elevator.pre.keys():
+            if elevator.passengers.get(i, None) == None:
+                flag = False
+                break
+        floors[self.now].add(elevator.time, self.get_time(), elevator, self.to_string(), flag)
         elevator.time = self.get_time()
+
+                
 
 class In(Info):
     # [时间戳]IN-乘客ID-所在层-电梯ID
@@ -157,7 +169,7 @@ class In(Info):
         self.now = int(ret.group("now"))
         self.id = int(ret.group("id"))
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -186,7 +198,7 @@ class Out(Info):
         self.pid = float(ret.group("pid"))
         self.now = int(ret.group("now"))
         self.id = int(ret.group("id"))
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -213,7 +225,7 @@ class MaintainAccept(Info):
         self.time = float(ret.group("time"))
         self.id = int(ret.group("id"))
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -228,7 +240,7 @@ class MaintainAble(Info):
         self.time = float(ret.group("time"))
         self.id = int(ret.group("id"))
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")
@@ -264,15 +276,15 @@ class PersonRequest(Request):
     def to_person(self):
         return Person(self.id, self.origin, self.to)
 
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         passengers[self.id] = self.to_person()
     
     def __str__(self):
         return f"{self.id}-FROM-{self.origin}-TO-{self.to}\n"
 
 class ElevatorRequest(Request):
-    # [时间戳]ADD-Elevator-电梯ID-起始楼层-满载人数-移动一层的时间
-    pattern = r"^\[ *(?P<time>\d+\.\d+)\]ADD-Elevator-(?P<id>\d+)-(?P<initial_floor>\d+)-(?P<capacity>\d+)-(?P<move_time>\d+\.\d+)$"
+    # [时间戳]ADD-Elevator-电梯ID-起始楼层-满载人数-移动一层的时间-可达性
+    pattern = r"^\[ *(?P<time>\d+\.\d+)\]ADD-Elevator-(?P<id>\d+)-(?P<initial_floor>\d+)-(?P<capacity>\d+)-(?P<move_time>\d+\.\d+)-(?P<access>\d+)$"
     def __init__(self, s: str) -> None:
         super().__init__(s)
         ret = re.match(self.pattern, s)
@@ -281,20 +293,26 @@ class ElevatorRequest(Request):
         self.now = int(ret.group("initial_floor"))
         self.capacity = int(ret.group("capacity"))
         self.move_time = float(ret.group("move_time"))
+        self.access = int(ret.group("access"))
     
     def to_elevator(self):
+        floors = {}
+        for i in range(1, 12):
+            if 1<<i>>1 & self.access:
+                floors[i] = True
         config = {
             "initial_floor" : self.now,
             "capacity" : self.capacity,
-            "move_time" : self.move_time
+            "move_time" : self.move_time,
+            "floors" : floors
         }
         return Elevator(self.id, config, self.get_time())
     
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevators[self.id] = self.to_elevator()
 
     def __str__(self) -> str:
-        return f"ADD-Elevator-{self.id}-{self.now}-{self.capacity}-{self.move_time}\n"
+        return f"ADD-Elevator-{self.id}-{self.now}-{self.capacity}-{self.move_time}-{self.access}\n"
 
 class MaintainRequest(Request):
     # [时间戳]MAINTAIN-Elevator-电梯ID
@@ -305,7 +323,7 @@ class MaintainRequest(Request):
         self.time = float(ret.group("time"))
         self.id = int(ret.group("id"))
 
-    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person]):
+    def update(self, elevators: dict[int, Elevator], passengers: dict[int, Person], floors: list[Floor]):
         elevator = elevators.get(self.id, None)
         if elevator == None:
             raise Exception("没有该电梯")

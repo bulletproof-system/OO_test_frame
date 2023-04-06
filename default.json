@@ -21,6 +21,9 @@
 	"generators" : [
 		"generators\\dataMaker-3.py"
 	],
+	// 楼层限制
+	"Mx" : 4,
+	"Nx" : 2,
 	// 电梯配置
 	"elevators": {
 		"default" : {

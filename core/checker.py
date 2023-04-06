@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-04 10:26:24
+LastEditTime: 2023-04-06 10:38:11
 FilePath: checker.py
 '''
 import threading, os, subprocess, time, re
@@ -15,6 +15,7 @@ from core.elevator import Elevator
 from core.person import Person
 from core.data import Data
 from core.project import Project
+from core.floor import Floor
 
 class Checker():
     __id = 0
@@ -30,6 +31,7 @@ class Checker():
         self.project = project
         self.elevators = Elevator.init_elevators()
         self.passengers = {}
+        self.floors = [Floor(i) for i in range(12)]
         self.result = {
             "project" : self.project.path,
             "test_data" : self.data.path,
@@ -42,6 +44,7 @@ class Checker():
         self.task = task
         self.log_path = os.path.join("log", f"checker-{self.id}.log")
         self.error_path = os.path.join("temp", f"checker-{self.id}.err")
+        self.interval = []
         self.update()
         
     def run(self):
@@ -64,6 +67,8 @@ class Checker():
                 elevator.check()
             for passenger in self.passengers.values():
                 passenger.check()
+            for floor in self.floors:
+                floor.check()
             self.result["state"] = "AC"
         except Exception as e:
             if self.result["state"] == "RUNNING":
@@ -85,7 +90,7 @@ class Checker():
 
     def __parse(self, info: Info):
         try:
-            info.update(self.elevators, self.passengers)
+            info.update(self.elevators, self.passengers, self.floors)
         except Exception as e:
             ret = [info.to_string()]
             for argv in e.args:

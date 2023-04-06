@@ -1,3 +1,10 @@
+'''
+Author: ltt
+Date: 2023-04-01 09:29:28
+LastEditors: ltt
+LastEditTime: 2023-04-05 22:02:05
+FilePath: elevator.py
+'''
 import re, json
 from config import settings
 
@@ -40,6 +47,7 @@ class Elevator():
         self.main_tain = "not send"
         self.main_tain_num = 0
         self.time = time
+        self.pre = {}
     
     def check(self):
         if len(self.passengers) != 0:
