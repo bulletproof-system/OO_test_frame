@@ -1,8 +1,15 @@
 '''
 Author: ltt
+Date: 2023-04-06 21:41:32
+LastEditors: ltt
+LastEditTime: 2023-04-06 22:32:43
+FilePath: floor.py
+'''
+'''
+Author: ltt
 Date: 2023-04-06 09:59:20
 LastEditors: ltt
-LastEditTime: 2023-04-06 10:53:57
+LastEditTime: 2023-04-06 22:30:17
 FilePath: floor.py
 '''
 
@@ -35,7 +42,11 @@ class Floor():
         for ret in result:
             count += ret[1]
             if count > max_count:
-                raise Exception(ret[3], f"floor-{self.floor}", prefix+" 超过阈值", "elevators: ", now)
+                raise Exception(f"""
+{ret[3]}
+floor-{self.floor} {prefix} 超过阈值
+elevators: {str(list(now.keys()))}
+""")
             elevator = ret[2]
             if ret[1] == 1:
                 now[elevator.id] = True
