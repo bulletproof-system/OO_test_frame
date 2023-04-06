@@ -17,6 +17,9 @@
 
 ## 使用方式
 
+- 你可能需要一点 `python` 的基础知识
+- 参考 `example.py`
+
 ### 启动评测机
 
 ```python
@@ -29,7 +32,7 @@ Program().start() # 启动评测机
 
 ```python
 task = Task(100) # 100 组随机数据
-task = Task(data_paths=["path/to/your/data", ...]) # 使用给定的数据路径测试
+task = Task(data_paths=[r"path\to\your\data", ...]) # 使用给定的数据路径测试
 task.start() # 开始评测(需要先启动评测机)，不会阻塞
 task.join() # 等待任务结束
 ```
@@ -126,15 +129,17 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
 }
 ```
 
+- 注意 `windows` 和 `linux` 下的路径分隔符不同
+
 ## 依赖
 
 - 使用命令 `pip install -r requirements.txt` 安装所需依赖模块
 
 ### 已知问题
 
-- cpu 时间测量不准，项目使用 `psutil` 模块对 cpu 时间进行测量，只有在用 `jconsole` 连接对应进程时测量的时间才是准确的。
+- cpu 时间测量不准，项目使用 `psutil` 模块对 cpu 时间进行测量，只有在用 `jconsole` 连接对应进程时测量的时间才是准确的。~~就离谱~~
 
-### update
+## update
 
 #### 2023-4-6
 
