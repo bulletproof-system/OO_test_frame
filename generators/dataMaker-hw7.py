@@ -21,10 +21,10 @@ ANTIADD = False #是否舍弃ADD请求
 RUNNUM = 10 # 同时可运行的最大电梯数
 
 ################################预处理ID
-MAXNUMBER = 101
-passengerId = [0 for _ in range(101)]
+MAXNUMBER = 201
+passengerId = [0 for _ in range(201)]
 pOrder = 1
-for i in range(1, 71) :
+for i in range(1, 101) :
     id = random.randint(1, MAXNUMBER)
     yn = False
     for j in range(1, i+1) :
@@ -45,7 +45,7 @@ accessAll = [0 for _ in range(101)]
 for i in range(1, 7) :
     elevators[i] = i
     accessAll[i] = 0x7FF
-for i in range(7, 71) :
+for i in range(7, 101) :
     id = random.randint(7, MAXNUMBER)
     yn = False
     for j in range(1, i+1) :
