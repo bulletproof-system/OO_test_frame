@@ -58,7 +58,8 @@ class Checker():
             with open(self.log_path, "r") as f:
                 for line in f.readlines():
                     infos.append(Info.parse(line))
-            infos += self.data.requests
+            # infos += self.data.requests
+            infos = self.data.requests + infos
             infos.sort()
             self.result["run_time"] = infos[-1].time
             for info in infos:
