@@ -93,7 +93,7 @@ Program().stop() # 等待所有评测任务结束后关闭评测机
     // 同时评测线程数
     "threads" : 50,
     // 最大计时同步性误差
-    "max_time_sync_error_second" : 1,
+    "max_time_sync_error_second" : 5,
     "display" : {
         // 仅保存非 AC log 文件
         "brief" : true
