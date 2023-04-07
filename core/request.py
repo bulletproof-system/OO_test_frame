@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:44:39
 LastEditors: ltt
-LastEditTime: 2023-04-06 10:48:24
+LastEditTime: 2023-04-07 19:35:58
 FilePath: request.py
 '''
 import re
@@ -88,6 +88,8 @@ class Arrive(Info):
             raise Exception("移动时间间隔过短", elevator)
         if abs(elevator.now - self.now) != 1:
             raise Exception("两次移动楼层差不为 1", elevator)
+        if self.now < 0 or self.now > 11:
+            raise Exception("移动后电梯不在 [1,11] 区间", elevator)
         if elevator.main_tain == "accept":
             elevator.main_tain_num += 1
         if elevator.main_tain_num > 2:
@@ -118,6 +120,8 @@ class Open(Info):
         if elevator.floors.get(self.now, None) == None:
             if elevator.main_tain != "accept":
                 raise Exception("电梯不能在该层开门", elevator)
+        if self.now < 0 or self.now > 11:
+            raise Exception("电梯不在 [1,11] 区间", elevator)
         elevator.state = "open"
         elevator.time = self.get_time()
         elevator.pre = elevator.passengers.copy()
@@ -147,6 +151,8 @@ class Close(Info):
         if elevator.floors.get(self.now, None) == None:
             if elevator.main_tain != "accept":
                 raise Exception("电梯不能在该层关门", elevator)
+        if self.now < 0 or self.now > 11:
+            raise Exception("电梯不在 [1,11] 区间", elevator)
         elevator.state = "close"
         flag = True
         for i in elevator.pre.keys():
