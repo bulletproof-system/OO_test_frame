@@ -161,7 +161,7 @@ while request != 0 :
         runNum += 1
         canWork = 0
         access = 0
-        while canWork <= NEWELEFLOORS:
+        while canWork < NEWELEFLOORS:
             sit = random.randint(0, 10)
             while (access & (1<<sit)) != 0 :
                 sit = random.randint(0, 10)
