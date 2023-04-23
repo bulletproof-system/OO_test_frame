@@ -173,6 +173,6 @@ download
 main.py
 input_self
 std
-generators\.gitignore
+generators/.gitignore
 # Ignore dynaconf secret files
 .secrets.*
