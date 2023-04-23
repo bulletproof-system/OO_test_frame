@@ -2,20 +2,14 @@
 Author: ltt
 Date: 2023-03-31 13:45:51
 LastEditors: ltt
-LastEditTime: 2023-04-06 22:27:39
+LastEditTime: 2023-04-23 18:55:40
 FilePath: checker.py
 '''
-import threading, os, subprocess, time, re
+import threading, os, subprocess, time, re, difflib
 from config import settings
-from queue import PriorityQueue
 
-from core import utils
-from core.request import *
-from core.elevator import Elevator
-from core.person import Person
 from core.data import Data
 from core.project import Project
-from core.floor import Floor
 
 class Checker():
     __id = 0
@@ -29,9 +23,6 @@ class Checker():
         self.id = Checker.getId()
         self.data = data
         self.project = project
-        self.elevators = Elevator.init_elevators()
-        self.passengers = {}
-        self.floors = [Floor(i) for i in range(12)]
         self.result = {
             "project" : self.project.path,
             "test_data" : self.data.path,
@@ -50,31 +41,29 @@ class Checker():
     def run(self):
         self.result["state"] = "RUNNING"
         self.update()
-        self.result["state"], self.result["cpu_time"]= self.project.run(self.data, self.log_path, self.error_path)
+        self.result["state"], self.result["cpu_time"] = self.project.run(self.data, self.log_path, self.error_path)
+        self.result["run_time"] = ""
         try:
             if (self.result["state"] != "RUNNING"):
                 raise Exception("")
-            infos = []
-            with open(self.log_path, "r") as f:
-                for line in f.readlines():
-                    infos.append(Info.parse(line))
-            # infos += self.data.requests
-            infos = self.data.requests + infos
-            infos.sort()
-            self.result["run_time"] = infos[-1].time
-            for info in infos:
-                self.__parse(info)
-            for elevator in self.elevators.values():
-                elevator.check()
-            for passenger in self.passengers.values():
-                passenger.check()
-            for floor in self.floors:
-                floor.check()
+            # TODO
+            with open(self.data.std_path, "r") as std_file:
+                std = std_file.readlines()
+            with open(self.log_path, "r") as out_file:
+                out = out_file.readlines()
+            self.result["result"] = difflib.ndiff(std, out)
+            for line in self.result["result"]:
+                if line[0] != ' ':
+                    raise Exception()
+            self.result["result"] = 'Accepted\n'
             self.result["state"] = "AC"
         except Exception as e:
             if self.result["state"] == "RUNNING":
                 self.result["state"] = "WA"
-                self.result["result"] = e.args[0]
+                html_path = os.path.join("log", f"checker-{self.id}.html")
+                with open(html_path, "w") as f:
+                    f.write(diff = difflib.HtmlDiff().make_file(std.splitlines(), out.splitlines(), fromdesc=self.data.std_path, todesc=self.log_path))
+                self.result["result"] = html_path
         finally:
             with open(self.error_path, "r") as err:
                 self.result["stderr"] = err.read()
@@ -89,15 +78,6 @@ class Checker():
         os.remove(self.error_path)
         return
 
-    def __parse(self, info: Info):
-        try:
-            info.update(self.elevators, self.passengers, self.floors)
-        except Exception as e:
-            ret = [info.to_string()]
-            for argv in e.args:
-                ret.append(str(argv))
-            raise Exception('\n'.join(ret))
-    
     def update(self):
         self.task.update(self)
 

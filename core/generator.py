@@ -1,3 +1,10 @@
+'''
+Author: ltt
+Date: 2023-04-01 09:29:28
+LastEditors: ltt
+LastEditTime: 2023-04-23 18:00:59
+FilePath: generator.py
+'''
 import threading, os, random, subprocess
 from config import settings
 
@@ -12,16 +19,9 @@ class Generator():
         self.__data_id_lock = threading.Lock()
         self.generators = {}
         for path in settings.generators:
-            (filePath, fullname) = os.path.split(path)
-            (name, suffix) = os.path.splitext(fullname)
-            if suffix == ".py":
-                command = ["python", path]
-            elif suffix == ".jar":
-                command = [os.path.join(settings.java_home, "bin", "java"), "-jar", path]
-            elif suffix == ".exe" or suffix == "":
-                command = [path]
-            else:
-                utils.printc(f"unsupport generator: {path}, suffix : {suffix}", "yellow")
+            try:
+                command = utils.commond(path)
+            except:
                 continue
             self.generators[path] = command
         if self.generators == {}:

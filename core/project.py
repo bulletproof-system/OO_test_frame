@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-03 09:14:02
+LastEditTime: 2023-04-23 18:52:46
 FilePath: project.py
 '''
 import threading, os, subprocess, time, psutil
@@ -10,8 +10,6 @@ from config import settings
 
 from core import utils
 from core.data import Data
-from core.request import Request
-
 class Project():
     projects = {}
     __projects_lock = threading.Lock()
@@ -33,32 +31,25 @@ class Project():
     def run(self, data: Data, log_path: str, error_path):
         state, cpu_time = "RUNNING", -1
         try:
-            with open(log_path, "w") as log:
-                with open(error_path, "w") as err:
-                    p = psutil.Popen(self.commond, shell=False, 
-                                        stdin=subprocess.PIPE, stdout=log, stderr=err)
-                    cpu_time = sum(p.cpu_times()[:4])
-                    def inputdata(stdin, requests: list[Request]):
-                        now = 0
-                        nonlocal p, cpu_time
-                        try:
-                            for request in requests:
-                                time.sleep(request.time - now)
-                                now = request.time
-                                stdin.write(bytes(str(request), 'utf-8'))
-                                cpu_time = sum(p.cpu_times()[:4])
-                                stdin.flush()
-                            stdin.close()
-                            while True:
-                                cpu_time = sum(p.cpu_times()[:4])
-                                time.sleep(0.1)
-                        except:
-                            pass
-                    threading.Thread(target=inputdata, args=(p.stdin, data.requests), daemon=True).start()
+            with open(data.path, "r") as input:
+                with open(log_path, "w") as log:
+                    with open(error_path, "w") as err:
+                        cpu_time = 0
+                        p = psutil.Popen(self.commond, shell=False, stdin=input, stdout=log, stderr=err)
+                        def calc_ctime():
+                            nonlocal cpu_time, p
+                            try:
+                                while True:
+                                    cpu_time = sum(p.cpu_times()[:4])
+                                    time.sleep(10)
+                            except:
+                                pass
+                        threading.Thread(target=calc_ctime, daemon=True)
                     try:
                         return_code = p.wait(timeout=settings.timeout)
                         if (return_code != 0):
                             state = "RE"
+                        
                         if (cpu_time > 10):
                             state = "CTLE"
                         return state, cpu_time
@@ -67,7 +58,7 @@ class Project():
                             p.kill()
                         except:
                             pass
-                        state = "TLE"
+                        state = "RTLE"
                         return state, cpu_time
                     except:
                         try:

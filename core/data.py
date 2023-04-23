@@ -2,13 +2,13 @@
 Author: ltt
 Date: 2023-03-31 18:13:10
 LastEditors: ltt
-LastEditTime: 2023-04-01 10:08:03
-FilePath: Data.py
+LastEditTime: 2023-04-23 18:12:53
+FilePath: data.py
 '''
 import threading
 
 from core import utils
-from core.request import *
+from core import std
 
 class Data():
     datas = {}
@@ -26,14 +26,4 @@ class Data():
             self.datas[path] = self
             self.path = path
             (_, self.name, _) = utils.split(path)
-            self.requests = []
-            with open(path, "r") as f:
-                for line in f.readlines():
-                    request = Request.parse(line)
-                    if type(request) == WrongFormat:
-                        utils.printc(f"wrong_data in {self.path}\n", "red", end='')
-                        continue
-                    self.requests.append(request)
-            self.requests.sort()
-
-            
+            self.std_path = std.calc_std(path)

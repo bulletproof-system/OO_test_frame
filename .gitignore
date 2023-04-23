@@ -169,9 +169,10 @@ test
 settings.json
 .vscode
 projects
-generators\data_2\stdin.txt
 download
 main.py
 input_self
+std
+generators\.gitignore
 # Ignore dynaconf secret files
 .secrets.*

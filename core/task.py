@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 13:46:14
 LastEditors: ltt
-LastEditTime: 2023-04-04 10:24:51
+LastEditTime: 2023-04-23 18:52:08
 FilePath: task.py
 '''
 import threading, os
@@ -64,8 +64,8 @@ class Task(threading.Thread):
     def update(self, checker: Checker):
         state =  checker.result["state"]
         with self.update_lock:
-            if (checker.result["run_time"] != -1):
-                self.df.loc[checker.data.name, checker.project.name] = f'{state}-({checker.result["run_time"]}s,{checker.result["cpu_time"]}s)'
+            if (checker.result["cpu_time"] != -1):
+                self.df.loc[checker.data.name, checker.project.name] = f'{state}-{checker.result["cpu_time"]}s'
             else:
                 self.df.loc[checker.data.name, checker.project.name] = state
             self.dump()

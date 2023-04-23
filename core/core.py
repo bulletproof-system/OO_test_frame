@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-23 22:59:43
 LastEditors: ltt
-LastEditTime: 2023-04-01 17:13:56
+LastEditTime: 2023-04-23 17:40:54
 FilePath: core.py
 '''
 from config import settings
@@ -17,12 +17,13 @@ from core.checker import Checker
 class Program():
     def __init__(self) -> None:
         self.threads: list[CheckThread] = []
-        self.checkers = Queue()
+        self.checkers = Queue(settings.threads * 2)
         self.stop_flag = False
         os.makedirs("input", exist_ok=True)
         os.makedirs("output", exist_ok=True)
         os.makedirs("temp", exist_ok=True)
         os.makedirs("log", exist_ok=True)
+        os.makedirs("std", exist_ok=True)
 
     def start(self):
         utils.printc("Program start...\n", "green", end='')

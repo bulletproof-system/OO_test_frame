@@ -6,6 +6,7 @@ LastEditTime: 2023-03-25 11:24:33
 FilePath: utils.py
 '''
 import subprocess, os
+from config import settings
 
 def run(command: list, desc=None, errdesc=None, timeout=None):
     """调用命令"""
@@ -54,3 +55,17 @@ def split(path: str):
     (filePath, fullname) = os.path.split(path)
     (name, suffix) = os.path.splitext(fullname)
     return (filePath, name, suffix)
+
+def commond(path):
+    (filePath, fullname) = os.path.split(path)
+    (name, suffix) = os.path.splitext(fullname)
+    if suffix == ".py":
+        command = ["python", path]
+    elif suffix == ".jar":
+        command = [os.path.join(settings.java_home, "bin", "java"), "-jar", path]
+    elif suffix == ".exe" or suffix == "":
+        command = [path]
+    else:
+        printc(f"unsupport path: {path}, suffix : {suffix}", "yellow")
+        raise Exception("unsupport path")
+    return command
