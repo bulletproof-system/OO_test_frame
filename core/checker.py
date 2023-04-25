@@ -62,7 +62,7 @@ class Checker():
                 self.result["state"] = "WA"
                 html_path = os.path.join("log", f"checker-{self.id}.html")
                 with open(html_path, "w") as f:
-                    f.write(diff = difflib.HtmlDiff().make_file(std.splitlines(), out.splitlines(), fromdesc=self.data.std_path, todesc=self.log_path))
+                    f.write(difflib.HtmlDiff().make_file(std, out, fromdesc=self.data.std_path, todesc=self.log_path))
                 self.result["result"] = html_path
         finally:
             with open(self.error_path, "r") as err:
