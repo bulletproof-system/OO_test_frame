@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-04-23 18:52:46
+LastEditTime: 2023-05-13 21:43:40
 FilePath: project.py
 '''
 import threading, os, subprocess, time, psutil
@@ -44,13 +44,13 @@ class Project():
                                     time.sleep(10)
                             except:
                                 pass
-                        threading.Thread(target=calc_ctime, daemon=True)
+                        threading.Thread(target=calc_ctime, daemon=True).start()
                     try:
                         return_code = p.wait(timeout=settings.timeout)
                         if (return_code != 0):
                             state = "RE"
                         
-                        if (cpu_time > 10):
+                        if (cpu_time > settings.timeout):
                             state = "CTLE"
                         return state, cpu_time
                     except psutil.TimeoutExpired as e:
