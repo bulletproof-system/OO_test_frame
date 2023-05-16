@@ -2,7 +2,7 @@
 Author: ltt
 Date: 2023-03-31 18:13:27
 LastEditors: ltt
-LastEditTime: 2023-05-13 21:43:40
+LastEditTime: 2023-05-16 15:59:24
 FilePath: project.py
 '''
 import threading, os, subprocess, time, psutil
@@ -41,7 +41,7 @@ class Project():
                             try:
                                 while True:
                                     cpu_time = sum(p.cpu_times()[:4])
-                                    time.sleep(10)
+                                    time.sleep(0.01)
                             except:
                                 pass
                         threading.Thread(target=calc_ctime, daemon=True).start()
